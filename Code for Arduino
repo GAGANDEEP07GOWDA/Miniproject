@@ -1,0 +1,48 @@
+#include <Servo.h>
+
+// Pin definitions
+const int laserSensorPin = A0;  // Laser sensor connected to analog pin A0
+const int buzzerPin = 8;        // Buzzer connected to digital pin 8
+const int servoPin = 9;         // Servo motor connected to digital pin 9
+
+// Threshold for laser beam interruption
+const int threshold = 500;  // Adjust based on ambient light and laser strength
+
+// Create a Servo object
+Servo lockServo;
+
+void setup() {
+  pinMode(buzzerPin, OUTPUT);
+  lockServo.attach(servoPin);
+
+  // Initialize servo to the unlocked position
+  lockServo.write(0);  // 0 degrees = unlocked
+
+  Serial.begin(9600);
+  Serial.println("Laser Home Security System Initialized");
+}
+
+void loop() {
+  int sensorValue = analogRead(laserSensorPin);
+
+  Serial.print("Sensor Value: ");
+  Serial.println(sensorValue);
+
+  if (sensorValue < threshold) {  // Laser beam interrupted
+    Serial.println("Intrusion detected!");
+
+    // Trigger buzzer
+    digitalWrite(buzzerPin, HIGH);
+
+    // Lock the door
+    lockServo.write(90);  // 90 degrees = locked
+
+    delay(5000);  // Keep the buzzer and lock active for 5 seconds
+
+    // Reset system
+    digitalWrite(buzzerPin, LOW);
+    lockServo.write(0);  // Return to unlocked position
+  }
+
+  delay(100);  // Short delay for stability
+}
